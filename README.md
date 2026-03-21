@@ -104,7 +104,7 @@ npm install
 ### 2. Configure environment variables
 
 ```bash
-cp .env.example .env
+touch .env
 ```
 
 Fill in all values:
