@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+</head>
+<body style="margin:0;padding:0;background:#f4f4f4;font-family:Arial,sans-serif;">
+
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f4;padding:40px 20px;">
+    <tr>
+      <td align="center">
+        <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
+
+          <!-- Header -->
+          <tr>
+            <td style="background:#2D2D2D;padding:24px 40px;border-top:4px solid #C4785A;">
+              <p style="margin:0;font-size:22px;color:#ffffff;font-family:'Georgia',serif;">
+                Deborah<span style="color:#C4785A;">.</span>
+              </p>
+              <p style="margin:4px 0 0;font-size:12px;color:rgba(255,255,255,0.5);letter-spacing:2px;text-transform:uppercase;">
+                New Order Received
+              </p>
+            </td>
+          </tr>
+
+          <!-- Alert banner -->
+          <tr>
+            <td style="background:#C4785A;padding:14px 40px;">
+              <p style="margin:0;font-size:15px;color:#ffffff;font-weight:bold;">
+                🛒 &nbsp;Order #{{order_id}} — {{total}}
+              </p>
+            </td>
+          </tr>
+
+          <!-- Body -->
+          <tr>
+            <td style="background:#ffffff;padding:40px;">
+
+              <!-- Customer info -->
+              <p style="margin:0 0 16px;font-size:12px;color:#8B9A7D;letter-spacing:2px;text-transform:uppercase;">
+                Customer
+              </p>
+              <table width="100%" cellpadding="0" cellspacing="0"
+                style="background:#f9f9f9;border-left:3px solid #C4785A;padding:16px 20px;margin-bottom:32px;">
+                <tr>
+                  <td style="font-size:13px;color:#888;padding:3px 0;width:120px;">Name</td>
+                  <td style="font-size:13px;color:#2D2D2D;font-weight:bold;padding:3px 0;">{{customer_name}}</td>
+                </tr>
+                <tr>
+                  <td style="font-size:13px;color:#888;padding:3px 0;">Email</td>
+                  <td style="font-size:13px;padding:3px 0;">
+                    <a href="mailto:{{customer_email}}" style="color:#C4785A;text-decoration:none;">{{customer_email}}</a>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="font-size:13px;color:#888;padding:3px 0;">Phone</td>
+                  <td style="font-size:13px;color:#2D2D2D;padding:3px 0;">{{customer_phone}}</td>
+                </tr>
+                <tr>
+                  <td style="font-size:13px;color:#888;padding:3px 0;vertical-align:top;">Address</td>
+                  <td style="font-size:13px;color:#2D2D2D;padding:3px 0;">{{shipping_address}}</td>
+                </tr>
+                <tr>
+                  <td style="font-size:13px;color:#888;padding:3px 0;vertical-align:top;">Notes</td>
+                  <td style="font-size:13px;color:#2D2D2D;padding:3px 0;">{{order_notes}}</td>
+                </tr>
+              </table>
+
+              <!-- Items -->
+              <p style="margin:0 0 16px;font-size:12px;color:#8B9A7D;letter-spacing:2px;text-transform:uppercase;">
+                Items Ordered
+              </p>
+              <div style="border:1px solid #e8e8e8;border-radius:4px;padding:20px;margin-bottom:24px;">
+                <pre style="margin:0;font-family:Arial,sans-serif;font-size:14px;color:#2D2D2D;line-height:2;white-space:pre-wrap;">{{items_list}}</pre>
+              </div>
+
+              <!-- Totals -->
+              <table width="100%" cellpadding="0" cellspacing="0"
+                style="border-top:2px solid #e8e8e8;padding-top:16px;">
+                <tr>
+                  <td style="font-size:14px;color:#888;padding:5px 0;">Subtotal</td>
+                  <td align="right" style="font-size:14px;color:#2D2D2D;padding:5px 0;">{{subtotal}}</td>
+                </tr>
+                <tr>
+                  <td style="font-size:14px;color:#888;padding:5px 0;">Shipping</td>
+                  <td align="right" style="font-size:14px;color:#2D2D2D;padding:5px 0;">{{shipping_cost}}</td>
+                </tr>
+                <tr>
+                  <td style="font-size:16px;font-weight:bold;color:#2D2D2D;padding:12px 0 0;border-top:1px solid #e8e8e8;">
+                    Total
+                  </td>
+                  <td align="right" style="font-size:18px;font-weight:bold;color:#C4785A;padding:12px 0 0;border-top:1px solid #e8e8e8;">
+                    {{total}}
+                  </td>
+                </tr>
+              </table>
+
+              <!-- CTA -->
+              <div style="margin-top:32px;text-align:center;">
+                <a href="https://your-site.com/AdminOrders"
+                  style="display:inline-block;background:#2D2D2D;color:#ffffff;text-decoration:none;
+                         font-size:14px;padding:14px 32px;letter-spacing:1px;">
+                  View in Admin Panel →
+                </a>
+              </div>
+
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td align="center" style="padding:20px 0;">
+              <p style="margin:0;font-size:11px;color:#aaa;">
+                {{order_date}} · Deborah Ceramics Admin Notification
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+
+</body>
+</html>
