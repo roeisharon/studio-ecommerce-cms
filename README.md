@@ -1,5 +1,7 @@
 # Studio E-Commerce — Full-Stack Storefront & CMS Template
 
+**[🌐 Live Demo](https://studio-ecommerce-cms.vercel.app/)**
+
 A production-ready, fully serverless e-commerce platform and content management system built with React and Firebase. Designed as a template for small creative businesses — studios, artists, makers, boutiques — that need a real online store with an admin panel, without the complexity of managing a backend server.
 
 ---
