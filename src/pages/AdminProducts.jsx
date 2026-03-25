@@ -69,11 +69,34 @@ export default function AdminProducts() {
   });
 
   const handleDelete = async () => {
-    if (deleteId) {
-      await api.entities.Product.delete(deleteId);
-      queryClient.invalidateQueries({ queryKey: ['admin-products'] });
-      setDeleteId(null);
+    if (!deleteId) return;
+
+    // Collect all image/video URLs for this product before deleting
+    const product = products.find(p => p.id === deleteId);
+    if (product) {
+      const urls = [
+        product.image_url,
+        ...(product.gallery_items || []).map(i => i.url),
+      ].filter(Boolean);
+
+      if (urls.length) {
+        try {
+          const res = await fetch('/api/delete-image', {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body:    JSON.stringify({ urls }),
+          });
+          const data = await res.json();
+          console.log('Cloudinary cleanup:', data);
+        } catch (err) {
+          console.warn('Cloudinary cleanup failed (non-fatal):', err);
+        }
+      }
     }
+
+    await api.entities.Product.delete(deleteId);
+    queryClient.invalidateQueries({ queryKey: ['admin-products'] });
+    setDeleteId(null);
   };
 
   const toggleFeatured = async (product) => {

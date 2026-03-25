@@ -31,7 +31,7 @@ export default function Checkout() {
   }, []);
 
   const subtotal = cart.reduce((s, i) => s + i.price * i.quantity, 0);
-  const shipping  = subtotal > 100 ? 0 : 12;
+  const shipping  = subtotal > 100 ? 0 : 15;
   const total     = subtotal + shipping;
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
