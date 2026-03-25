@@ -3,7 +3,6 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { queryClient } from '@/lib/query-client';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
-import { LanguageProvider } from '@/components/shared/LanguageToggle';
 import { useKonamiCode } from '@/hooks/useKonamiCode';
 import Layout from './Layout';
 
@@ -50,7 +49,6 @@ export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <LanguageProvider>
           <BrowserRouter>
             <KonamiListener />
             <Routes>
@@ -85,7 +83,6 @@ export default function App() {
               </Route>
             </Routes>
           </BrowserRouter>
-        </LanguageProvider>
       </AuthProvider>
     </QueryClientProvider>
   );

@@ -3,7 +3,6 @@ import { Outlet, useLocation } from 'react-router-dom';
 import Header        from '@/components/shared/Header';
 import Footer        from '@/components/shared/Footer';
 import FloatingCart  from '@/components/shared/FloatingCart';
-import LanguageToggle from '@/components/shared/LanguageToggle';
 
 const ADMIN_PATHS = [
   '/AdminLogin',
@@ -39,7 +38,6 @@ export default function Layout() {
       </main>
       {!isAdmin && <Footer />}
       {!isAdmin && <FloatingCart />}
-      {!isAdmin && <LanguageToggle />}
     </div>
   );
 }
