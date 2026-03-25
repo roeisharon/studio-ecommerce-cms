@@ -93,7 +93,7 @@ export default function AdminProducts() {
         }
       }
     }
-
+    
     await api.entities.Product.delete(deleteId);
     queryClient.invalidateQueries({ queryKey: ['admin-products'] });
     setDeleteId(null);

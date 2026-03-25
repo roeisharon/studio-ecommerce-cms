@@ -27,10 +27,7 @@ const deleteAsset = async (publicId, preferredType = 'image') => {
 
   for (const type of types) {
     try {
-      const res = await cloudinary.uploader.destroy(publicId, {
-        resource_type: type,
-        invalidate: true,
-      });
+      const res = await cloudinary.uploader.destroy(publicId);
       if (res?.result === 'ok' || res?.result === 'not found') {
         return { ok: true, publicId, type, result: res.result };
       }
