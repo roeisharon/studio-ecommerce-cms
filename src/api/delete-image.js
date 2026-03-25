@@ -1,100 +1,89 @@
 // api/delete-image.js — Vercel serverless function
+// Uses the official Cloudinary SDK for reliable deletion
+// Required env vars (no VITE_ prefix — server only):
+//   CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET
 
-const https  = require('https');
-const crypto = require('crypto');
+const cloudinary = require('cloudinary').v2;
+
+cloudinary.config({
+  cloud_name: process.env.VITE_CLOUDINARY_CLOUD_NAME,
+  api_key:    process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+// Extract public_id from a Cloudinary URL
+// https://res.cloudinary.com/cloud/image/upload/v123/deborah-ceramics/abc.jpg
+//   → deborah-ceramics/abc
+const extractPublicId = (url) => {
+  const match = url.match(/\/upload\/(?:v\d+\/)?(.+)\.[^.]+$/);
+  return match ? match[1] : null;
+};
+
+// Try both resource types since Cloudinary requires the exact one
+const deleteAsset = async (publicId, preferredType = 'image') => {
+  const types = preferredType === 'video'
+    ? ['video', 'image']
+    : ['image', 'video'];
+
+  for (const type of types) {
+    try {
+      const res = await cloudinary.uploader.destroy(publicId, {
+        resource_type: type,
+        invalidate: true,
+      });
+      if (res?.result === 'ok' || res?.result === 'not found') {
+        return { ok: true, publicId, type, result: res.result };
+      }
+    } catch (e) {
+      // try next type
+    }
+  }
+
+  // Final fallback — bulk API
+  try {
+    const [resImg, resVid] = await Promise.allSettled([
+      cloudinary.api.delete_resources([publicId], { resource_type: 'image' }),
+      cloudinary.api.delete_resources([publicId], { resource_type: 'video' }),
+    ]);
+    const anyOk =
+      resImg.value?.deleted?.[publicId] === 'deleted' ||
+      resVid.value?.deleted?.[publicId] === 'deleted';
+    return { ok: anyOk, publicId, type: 'api.delete_resources', result: anyOk ? 'deleted' : 'failed' };
+  } catch (e) {
+    return { ok: false, publicId, error: e.message };
+  }
+};
 
 module.exports = async (req, res) => {
+  // Health check
+  if (req.method === 'GET') {
+    return res.status(200).json({
+      status: 'ok',
+      env: {
+        CLOUDINARY_CLOUD_NAME: process.env.VITE_CLOUDINARY_CLOUD_NAME ? `✅ "${process.env.VITE_CLOUDINARY_CLOUD_NAME}"` : '❌ missing',
+        CLOUDINARY_API_KEY:    process.env.CLOUDINARY_API_KEY    ? '✅ set' : '❌ missing',
+        CLOUDINARY_API_SECRET: process.env.CLOUDINARY_API_SECRET ? '✅ set' : '❌ missing',
+      }
+    });
+  }
+
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const CLOUD_NAME = process.env.VITE_CLOUDINARY_CLOUD_NAME;
-  const API_KEY    = process.env.CLOUDINARY_API_KEY;
-  const API_SECRET = process.env.CLOUDINARY_API_SECRET;
-
-  // Log env var presence (not values) for debugging
-  console.log('Env check:', {
-    CLOUD_NAME: CLOUD_NAME ? `set (${CLOUD_NAME})` : 'MISSING',
-    API_KEY:    API_KEY    ? 'set'                  : 'MISSING',
-    API_SECRET: API_SECRET ? 'set'                  : 'MISSING',
-  });
-
-  if (!CLOUD_NAME || !API_KEY || !API_SECRET) {
-    return res.status(500).json({
-      error: 'Missing Cloudinary credentials',
-      missing: {
-        CLOUDINARY_CLOUD_NAME: !CLOUD_NAME,
-        CLOUDINARY_API_KEY:    !API_KEY,
-        CLOUDINARY_API_SECRET: !API_SECRET,
-      }
-    });
-  }
-
-  const { urls = [] } = req.body;
-  console.log('URLs to delete:', urls);
-
+  const { urls = [] } = req.body || {};
   if (!urls.length) {
     return res.status(400).json({ error: 'No URLs provided' });
   }
 
-  // Extract public_id from Cloudinary URL
-  // https://res.cloudinary.com/cloud/image/upload/v123/folder/file.jpg → folder/file
-  const extractPublicId = (url) => {
-    const match = url.match(/\/upload\/(?:v\d+\/)?(.+)\.[a-zA-Z0-9]+$/);
-    return match ? match[1] : null;
-  };
-
-  const deleteOne = (publicId, resourceType) => new Promise((resolve, reject) => {
-    const timestamp = Math.floor(Date.now() / 1000);
-    const signature = crypto
-      .createHash('sha1')
-      .update(`public_id=${publicId}&timestamp=${timestamp}${API_SECRET}`)
-      .digest('hex');
-
-    const body = new URLSearchParams({
-      public_id: publicId,
-      signature,
-      api_key:   API_KEY,
-      timestamp: String(timestamp),
-    }).toString();
-
-    console.log(`Deleting ${resourceType}/${publicId}...`);
-
-    const req2 = https.request({
-      hostname: 'api.cloudinary.com',
-      path:     `/v1_1/${CLOUD_NAME}/${resourceType}/destroy`,
-      method:   'POST',
-      headers:  {
-        'Content-Type':   'application/x-www-form-urlencoded',
-        'Content-Length': Buffer.byteLength(body),
-      },
-    }, (r) => {
-      let data = '';
-      r.on('data', chunk => data += chunk);
-      r.on('end', () => {
-        console.log(`Cloudinary response for ${publicId}:`, data);
-        try { resolve(JSON.parse(data)); }
-        catch { resolve({ raw: data }); }
-      });
-    });
-
-    req2.on('error', reject);
-    req2.write(body);
-    req2.end();
-  });
-
-  const results = await Promise.allSettled(
-    urls.map(async (url) => {
+  const results = await Promise.all(
+    urls.map((url) => {
       const publicId = extractPublicId(url);
-      if (!publicId) {
-        console.log('Could not extract public_id from:', url);
-        return { url, status: 'skipped', reason: 'could not extract public_id' };
-      }
-      const resourceType = url.includes('/video/') ? 'video' : 'image';
-      const result = await deleteOne(publicId, resourceType);
-      return { url, publicId, resourceType, result };
+      if (!publicId) return { url, ok: false, error: 'Could not extract public_id' };
+      const preferredType = url.includes('/video/') ? 'video' : 'image';
+      return deleteAsset(publicId, preferredType);
     })
   );
 
-  res.status(200).json({ results });
+  return res.status(200).json({ results });
 };
