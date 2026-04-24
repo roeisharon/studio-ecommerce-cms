@@ -7,9 +7,9 @@ import EnhancedFilters from '@/components/products/EnhancedFilters';
 
 const CONFIG = {
   bowls:  { title: 'Bowls', description: 'Handcrafted ceramic bowls for everyday beauty.', image: 'https://images.unsplash.com/photo-1610701596007-11502861dcfa?w=1200&q=80' },
-  vases:  { title: 'Vases', description: 'Statement pieces that transform any space.', image: 'https://images.unsplash.com/photo-1578749556568-bc2c40e68b61?w=1200&q=80' },
+  vases:  { title: 'Vases', description: 'Statement pieces that transform any space.', image: 'https://images.unsplash.com/photo-1567225557594-88d73e55f2cb?w=1200&q=80' },
   mugs:   { title: 'Mugs', description: 'Morning rituals made special.', image: 'https://images.unsplash.com/photo-1514228742587-6b1558fcca3d?w=1200&q=80' },
-  plates: { title: 'Plates', description: 'Everyday elegance for your table.', image: 'https://images.unsplash.com/photo-1603199506016-5f36e6d10d55?w=1200&q=80' },
+  plates: { title: 'Plates', description: 'Everyday elegance for your table.', image: 'https://images.unsplash.com/photo-1578749556568-bc2c40e68b61?w=1200&q=80' },
 };
 
 export default function CategoryPage({ category }) {
