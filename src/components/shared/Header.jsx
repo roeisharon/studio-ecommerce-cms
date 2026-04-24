@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../../utils/index';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, ShoppingBag } from 'lucide-react';
 
 const navLinks = [
   { name: 'Home',         page: 'Home' },
@@ -14,64 +14,70 @@ const navLinks = [
   { name: 'Custom Order', page: 'CustomOrder' },
 ];
 
-// Number of taps on the logo required to open admin login on mobile
-// Set VITE_ADMIN_TAP_COUNT in your .env file
-const LOGO_TAP_COUNT = parseInt(import.meta.env.VITE_ADMIN_TAP_COUNT || '0', 10);
+const LOGO_TAP_COUNT     = parseInt(import.meta.env.VITE_ADMIN_TAP_COUNT || '0', 10);
 const LOGO_TAP_WINDOW_MS = 3000;
 
-export default function Header({ cartCount = 0 }) {
-  const [isScrolled, setIsScrolled]         = useState(false);
+export default function Header() {
+  const [isScrolled, setIsScrolled]             = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const location  = useLocation();
-  const navigate  = useNavigate();
-  const tapCount  = useRef(0);
-  const tapTimer  = useRef(null);
+  const location = useLocation();
+  const navigate = useNavigate();
+  const tapCount = useRef(0);
+  const tapTimer = useRef(null);
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 50);
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Close mobile menu on route change
   useEffect(() => {
     setIsMobileMenuOpen(false);
-  }, [location]);
+  }, [location.pathname]);
 
-  // Secret tap handler — tap logo LOGO_TAP_COUNT times within LOGO_TAP_WINDOW_MS
-  const handleLogoTap = (e) => {
-    // Only intercept on touch / mobile — desktop uses keyboard sequence
-    if (!window.matchMedia('(hover: none)').matches) return;
+  // Prevent body scroll when mobile menu is open
+  useEffect(() => {
+    document.body.style.overflow = isMobileMenuOpen ? 'hidden' : '';
+    return () => { document.body.style.overflow = ''; };
+  }, [isMobileMenuOpen]);
 
-    e.preventDefault();
+  // Secret tap handler — use onTouchEnd for reliability on iOS
+  const handleLogoTouchEnd = (e) => {
+    if (!LOGO_TAP_COUNT) return;
+
     tapCount.current += 1;
-
     clearTimeout(tapTimer.current);
-    tapTimer.current = setTimeout(() => {
-      tapCount.current = 0;
-    }, LOGO_TAP_WINDOW_MS);
+    tapTimer.current = setTimeout(() => { tapCount.current = 0; }, LOGO_TAP_WINDOW_MS);
 
     if (tapCount.current >= LOGO_TAP_COUNT) {
       tapCount.current = 0;
       clearTimeout(tapTimer.current);
+      e.preventDefault();
       navigate('/AdminLogin');
     }
   };
 
+  const isActive = (page) => {
+    if (page === 'Home') return location.pathname === '/';
+    return location.pathname === '/' + page;
+  };
+
   const headerBg = isScrolled
-    ? 'bg-white/95 backdrop-blur-sm shadow-sm py-3'
-    : 'bg-transparent py-5';
+    ? 'bg-white/95 backdrop-blur-sm shadow-sm'
+    : 'bg-transparent';
 
   return (
     <>
-      <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${headerBg}`}>
+      <header className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${headerBg}`}>
         <div className="container mx-auto px-4 lg:px-12">
-          <div className="flex items-center justify-between h-12">
+          <div className="flex items-center justify-between h-16">
 
             {/* Logo */}
             <Link
               to={createPageUrl('Home')}
-              onClick={handleLogoTap}
-              className="flex items-center flex-shrink-0"
+              onTouchEnd={handleLogoTouchEnd}
+              className="flex items-center flex-shrink-0 select-none"
             >
               <span className="text-xl lg:text-2xl font-serif text-[#2D2D2D] tracking-tight">
                 Deborah<span className="text-[#C4785A]">.</span>
@@ -85,9 +91,7 @@ export default function Header({ cartCount = 0 }) {
                   key={link.page}
                   to={createPageUrl(link.page)}
                   className={`text-sm tracking-wide transition-colors hover:text-[#C4785A] ${
-                    location.pathname === '/' + link.page || location.pathname === '/'  && link.page === 'Home'
-                      ? 'text-[#C4785A]'
-                      : 'text-[#2D2D2D]'
+                    isActive(link.page) ? 'text-[#C4785A]' : 'text-[#2D2D2D]'
                   }`}
                 >
                   {link.name}
@@ -97,8 +101,10 @@ export default function Header({ cartCount = 0 }) {
 
             {/* Mobile hamburger */}
             <button
+              type="button"
+              onTouchEnd={(e) => { e.stopPropagation(); setIsMobileMenuOpen(true); }}
               onClick={() => setIsMobileMenuOpen(true)}
-              className="lg:hidden p-2 -mr-2"
+              className="lg:hidden p-2 -mr-1 touch-manipulation"
               aria-label="Open menu"
             >
               <Menu className="w-6 h-6 text-[#2D2D2D]" />
@@ -107,49 +113,67 @@ export default function Header({ cartCount = 0 }) {
         </div>
       </header>
 
-      {/* Mobile Menu */}
+      {/* Mobile Menu — rendered in place, high z-index */}
       <AnimatePresence>
         {isMobileMenuOpen && (
           <motion.div
+            key="mobile-menu"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 lg:hidden"
+            style={{ position: 'fixed', inset: 0, zIndex: 9999 }}
           >
+            {/* Backdrop */}
             <div
-              className="absolute inset-0 bg-black/50"
+              style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.5)' }}
               onClick={() => setIsMobileMenuOpen(false)}
+              onTouchEnd={() => setIsMobileMenuOpen(false)}
             />
+
+            {/* Drawer */}
             <motion.div
               initial={{ x: '100%' }}
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
-              transition={{ type: 'tween', duration: 0.3 }}
-              className="absolute right-0 top-0 bottom-0 w-72 bg-white p-6 flex flex-col"
+              transition={{ type: 'tween', duration: 0.25 }}
+              style={{
+                position: 'absolute', top: 0, right: 0, bottom: 0,
+                width: '280px', background: '#fff',
+                padding: '24px', display: 'flex', flexDirection: 'column',
+                overflowY: 'auto',
+              }}
             >
-              <div className="flex justify-between items-center mb-8">
-                <span className="text-2xl font-serif text-[#2D2D2D]">
-                  Deborah<span className="text-[#C4785A]">.</span>
+              {/* Drawer header */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
+                <span style={{ fontSize: '22px', fontFamily: 'Georgia, serif', color: '#2D2D2D' }}>
+                  Deborah<span style={{ color: '#C4785A' }}>.</span>
                 </span>
                 <button
+                  type="button"
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className="p-1"
+                  onTouchEnd={() => setIsMobileMenuOpen(false)}
+                  style={{ padding: '4px' }}
                   aria-label="Close menu"
                 >
-                  <X className="w-6 h-6 text-[#2D2D2D]" />
+                  <X style={{ width: 24, height: 24, color: '#2D2D2D' }} />
                 </button>
               </div>
 
-              <nav className="flex flex-col gap-1">
+              {/* Nav links */}
+              <nav style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
                 {navLinks.map((link) => (
                   <Link
                     key={link.page}
                     to={createPageUrl(link.page)}
-                    className={`text-base py-3 border-b border-gray-100 transition-colors ${
-                      location.pathname === '/' + link.page
-                        ? 'text-[#C4785A] font-medium'
-                        : 'text-[#2D2D2D] hover:text-[#C4785A]'
-                    }`}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    style={{
+                      padding: '14px 0',
+                      borderBottom: '1px solid #f0f0f0',
+                      fontSize: '16px',
+                      color: isActive(link.page) ? '#C4785A' : '#2D2D2D',
+                      fontWeight: isActive(link.page) ? 600 : 400,
+                      textDecoration: 'none',
+                    }}
                   >
                     {link.name}
                   </Link>
