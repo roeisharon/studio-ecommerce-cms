@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { queryClient } from '@/lib/query-client';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
@@ -32,6 +32,15 @@ import AdminBlog       from './pages/AdminBlog';
 import AdminBlogEdit   from './pages/AdminBlogEdit';
 import AdminReviews    from './pages/AdminReviews';
 
+/** Scrolls to top on every route change */
+function ScrollToTop() {
+  const { pathname } = useLocation();
+  React.useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }, [pathname]);
+  return null;
+}
+
 /** Listens for Konami code globally and redirects to /AdminLogin */
 function KonamiListener() {
   useKonamiCode();
@@ -50,6 +59,7 @@ export default function App() {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
           <BrowserRouter>
+            <ScrollToTop />
             <KonamiListener />
             <Routes>
               <Route element={<Layout />}>
