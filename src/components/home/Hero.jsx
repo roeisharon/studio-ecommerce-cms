@@ -7,7 +7,7 @@ import { Button } from '../ui/button';
 
 export default function Hero() {
   return (
-    <section className="relative min-h-[90vh] flex items-center overflow-hidden bg-[#FAF7F2] pt-16">
+    <section className="relative min-h-[90vh] flex items-center overflow-hidden bg-[#FAF7F2] pt-16 lg:pt-0">
       {/* Background Pattern */}
       <div className="absolute inset-0 opacity-5">
         <div className="absolute top-20 left-10 w-64 h-64 rounded-full border-2 border-[#C4785A]" />
