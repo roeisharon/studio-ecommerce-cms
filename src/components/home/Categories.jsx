@@ -13,7 +13,7 @@ const categories = [
   {
     name: 'Vases',
     page: 'Vases',
-    image: 'https://images.unsplash.com/photo-1578749556568-bc2c40e68b61?w=600&q=80',
+    image: 'https://images.unsplash.com/photo-1676534967649-de5853869036?q=80',
     description: 'Sculptural beauty'
   },
   {
@@ -25,7 +25,7 @@ const categories = [
   {
     name: 'Plates',
     page: 'Plates',
-    image: 'https://images.unsplash.com/photo-1603199506016-5f36e6d10d55?w=600&q=80',
+    image: 'https://images.unsplash.com/photo-1578749556568-bc2c40e68b61?w=600&q=80',
     description: 'Table artistry'
   }
 ];
